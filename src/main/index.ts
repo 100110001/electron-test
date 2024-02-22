@@ -30,7 +30,7 @@ function createWindow() {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
       devToolsExtensions: true, // 允许加载 Chrome 扩展
-      nodeIntegration: true, // 启用 Node.js 集成
+      nodeIntegration: false, // 启用 Node.js 集成
       nodeIntegrationInWorker: true
     }
   })

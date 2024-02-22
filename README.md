@@ -2,6 +2,13 @@
 
 使用 Vue 和 TypeScript 的 Electron 应用程序
 
+[Electron]: https://www.electronjs.org/zh/
+[Vue]: https://cn.vuejs.org/guide/introduction.html
+[Vite]: https://cn.vitejs.dev/guide/
+[Electron-vite]: https://cn.electron-vite.org/guide/
+
+
+
 ## 推荐的 IDE 设置
 
 - [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
@@ -32,6 +39,67 @@ $ pnpm build:mac
 # For Linux
 $ pnpm build:linux
 ```
+
+
+
+
+
+# 关于开发
+
+## 使用 VS Code 调试
+
+[使用 VS Code 调试]: https://www.electronjs.org/zh/docs/latest/tutorial/tutorial-first-app#%E5%8F%AF%E9%80%89%E4%BD%BF%E7%94%A8-vs-code-%E8%B0%83%E8%AF%95
+
+
+
+## 预加载脚本
+
+[使用预加载脚本]: https://cn.electron-vite.org/guide/dev#%E4%BD%BF%E7%94%A8%E9%A2%84%E5%8A%A0%E8%BD%BD%E8%84%9A%E6%9C%AC
+[使用预加载脚本]: https://www.electronjs.org/zh/docs/latest/tutorial/tutorial-preload
+
+
+
+### 什么是预加载脚本？
+
+Electron 的主进程是一个拥有着完全操作系统访问权限的 Node.js 环境。 除了 [Electron 模组](https://www.electronjs.org/zh/docs/latest/api/app) 之外，您也可以访问 [Node.js 内置模块](https://nodejs.org/dist/latest/docs/api/) 和所有通过 npm 安装的包。 另一方面，出于安全原因，渲染进程默认跑在网页页面上，而并非 Node.js里。
+
+为了将 Electron 的不同类型的进程桥接在一起，我们需要使用被称为 **预加载** 的特殊脚本。
+
+![eproc](https://cn.electron-vite.org/electron-processes.png)
+
+
+
+```js
+// preload.js
+const { contextBridge } = require('electron')
+
+contextBridge.exposeInMainWorld('versions', {
+  node: () => process.versions.node,
+  chrome: () => process.versions.chrome,
+  electron: () => process.versions.electron
+  // 除函数之外，我们也可以暴露变量
+})
+```
+
+> IPC 安全
+>
+> 可以注意到我们使用了一个辅助函数来包裹 `ipcRenderer.invoke('ping')` 调用，而并非直接通过 context bridge 暴露 `ipcRenderer` 模块。 你**永远**都不会想要通过预加载直接暴露整个 `ipcRenderer` 模块。 这将使得你的渲染器能够直接向主进程发送任意的 IPC 信息，会使得其成为恶意代码最强有力的攻击媒介。
+
+### 沙盒的限制
+
+从 Electron 20 开始，预加载脚本默认沙盒化，不再拥有完整 Node.js 环境的访问权。实际上，这意味着你只拥有一个 polyfilled 的 require 函数（类似于 Node 的 require 模块），它只能访问一组有限的 API。
+
+| 可用的 API            | 详细信息                                                     |
+| :-------------------- | :----------------------------------------------------------- |
+| Electron 模块         | 仅 [渲染进程模块](https://www.electronjs.org/zh/docs/latest/api/context-bridge) |
+| Node.js 模块          | `events`, `timers`, `url`                                    |
+| Polyfilled 的全局模块 | `Buffer`, `process`, `clearImmediate`, `setImmediate`        |
+
+提示
+
+因为 `require` 函数是一个功能有限的 polyfill，你无法把 preload 脚本拆成多个文件并作为 CommonJS 模块来加载，除非指定了 `sandbox: false`。
+
+
 
 
 
@@ -454,7 +522,30 @@ port.on('message', (files) => {
 
 
 
-# electron-vite 配置
+
+
+# 关于分发
+
+## 打包
+
+[分发]: https://cn.electron-vite.org/guide/distribution
+[打包您的应用程序]: https://www.electronjs.org/zh/docs/latest/tutorial/%E6%89%93%E5%8C%85%E6%95%99%E7%A8%8B
+
+
+
+# electron-vite 
+
+## nodeIntegration
+
+[nodeIntegration]: https://cn.electron-vite.org/guide/dev#nodeintegration
+
+目前，electron-vite 不支持 `nodeIntegration`。其中一个重要的原因是 Vite 的 HMR 是基于原生 ESM 实现的。但是还有一种支持方式就是使用 `require` 导入 node 模块，不太优雅。或者你可以使用插件 [vite-plugin-commonjs-externals](https://github.com/xiaoxiangmoe/vite-plugin-commonjs-externals) 来处理。
+
+也许将来会有更好的方法来支持。但需要注意的是，使用预加载脚本是一个更好、更安全的选择。
+
+
+
+
 
 ## 热重载
 
@@ -568,4 +659,18 @@ export default defineConfig({
 ## 外部依赖
 
 [外部依赖]: https://cn.electron-vite.org/guide/build#%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5
+
+
+
+
+
+
+
+# 最佳实践
+
+[最佳实践]: https://cn.electron-vite.org/guide/introduction#%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5
+
+很多开发者和社区模板，都会通过开启node集成（`nodeIntegration`）和关闭上下文隔离（`contentIsolation`）的方式来开发。尽管这可以获得一点点的开发效率，但不应该被推荐，这是很不安全的做法。在 Electron 中，不仅仅是浏览器，它还提供很多强大的原生能力，如文件系统访问，shell等。事实上，最流行的 Electron 应用程序（slack、visual studio code 等）都不会这样做。
+
+所以，electron-vite 的设计思路也会遵循这一点，包括推荐的项目结构、内置配置等。
 
