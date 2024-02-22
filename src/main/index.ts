@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, Menu } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
 import path from 'path'
@@ -53,6 +53,8 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
   mainWindow.webContents.openDevTools({ mode: 'right' })
+
+  createTray(mainWindow)
 
   console.log('Hello from Electron 👋👋👋')
   ipcMain.handle('dialog:openFile', handleFileOpen)
@@ -110,13 +112,26 @@ function createWindow() {
     }
     operation[type]()
   })
+  ipcMain.on('show-context-menu', (event) => {
+    const template = [
+      {
+        label: 'Menu Item 1',
+        click: () => {
+          event.sender.send('context-menu-command', 'menu-item-1')
+        }
+      },
+      { type: 'separator' },
+      { label: 'Menu Item 2', type: 'checkbox', checked: true }
+    ]
+    const menu = Menu.buildFromTemplate(template)
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) })
+  })
 }
 
 // 当Electron完成初始化并准备创建浏览器窗口时，将调用此方法。某些API只能在此事件发生后使用。
 app
   .whenReady()
   .then(() => {
-    createTray(mainWindow)
     // installExtension('nhdogjmejiglipccpnnnanhbledajbpd')
     //   .then((name) => console.log(`Added Extension:  ${name}`))
     //   .catch((err) => console.log('An error occurred: ', err))

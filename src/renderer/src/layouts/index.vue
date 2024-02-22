@@ -17,12 +17,12 @@
                 v-if="typeof item.icon === 'function'"
                 style="margin-right: 4px"
               ></component>
-              <img v-else :src="item.icon" width="14px" style="margin-right: 20px" />
+              <img v-else :src="item.icon" width="14px" style="margin-right: 4px" />
             </template>
             <template #title>{{ item.title }}</template>
 
-            <a-menu-item v-for="child in item.children">
-              {{ child.meta.title }}
+            <a-menu-item v-for="child in item.children" :key="child.path">
+              {{ child.meta.title }} {{ child.key }}
             </a-menu-item>
           </a-sub-menu>
 
@@ -81,7 +81,7 @@ onMounted(() => {
     item.children &&
       item.children.map((el) => {
         el = { ...el, ...el.meta }
-        el.key = el.path
+        el.key = item.path + el.path
         delete el.component
         return el
       })
@@ -95,10 +95,7 @@ watch(route, (to) => (menuState.selectedKeys = [to.path]), { immediate: true })
 
 const onCollapse = (val) => (menuState.collapsed = val)
 
-const menuClick = (item) => {
-  console.log(item)
-  router.push(item)
-}
+const menuClick = (item) => router.push(item)
 
 const action = (type) => window.electronAPI.service({ type })
 </script>

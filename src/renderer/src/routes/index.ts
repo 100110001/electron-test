@@ -18,23 +18,41 @@ const basicRoutes = [
         }
       },
       {
-        path: '/dxcb',
-        component: () => import('@renderer/views/dxcb/index.vue'),
-        name: 'dxcb',
+        path: '/electron',
+        name: 'electron',
         meta: {
-          title: '地下城堡',
-          icon: new URL(`@renderer/assets/images/dxcb.png`, import.meta.url).href
-        }
+          title: 'Electron',
+          icon: new URL(`@renderer/assets/images/electron.png`, import.meta.url).href
+        },
+        children: [
+          {
+            path: '/menu',
+            component: () => import('@renderer/views/electron/Menu.vue'),
+            name: 'menu',
+            meta: {
+              title: 'Menu'
+            }
+          }
+        ]
       },
-      {
-        path: '/nsh',
-        component: () => import('@renderer/views/nsh/index.vue'),
-        name: 'nsh',
-        meta: {
-          title: '逆水寒',
-          icon: new URL(`@renderer/assets/images/nsh.png`, import.meta.url).href
-        }
-      },
+      // {
+      //   path: '/dxcb',
+      //   component: () => import('@renderer/views/dxcb/index.vue'),
+      //   name: 'dxcb',
+      //   meta: {
+      //     title: '地下城堡',
+      //     icon: new URL(`@renderer/assets/images/dxcb.png`, import.meta.url).href
+      //   }
+      // },
+      // {
+      //   path: '/nsh',
+      //   component: () => import('@renderer/views/nsh/index.vue'),
+      //   name: 'nsh',
+      //   meta: {
+      //     title: '逆水寒',
+      //     icon: new URL(`@renderer/assets/images/nsh.png`, import.meta.url).href
+      //   }
+      // },
       {
         path: '/setting',
         component: () => import('@renderer/views/setting/index.vue'),

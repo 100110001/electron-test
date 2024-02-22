@@ -33,13 +33,7 @@ $ pnpm build:mac
 $ pnpm build:linux
 ```
 
----
 
----
-
-# electron-app
-
-An Electron application with Vue
 
 ## Main Process 模块
 
@@ -92,7 +86,219 @@ An Electron application with Vue
 
 - [Using channel messaging](https://developer.mozilla.org/zh-CN/docs/Web/API/Channel_Messaging_API/Using_channel_messaging)
 
+
+
+
+
+## 菜单和托盘
+
+### 应用内菜单
+
+[官方文档]: https://www.electronjs.org/zh/docs/latest/api/menu
+
+
+
+```javascript
+const { app, Menu } = require('electron')
+
+const isMac = process.platform === 'darwin'
+
+const template = [
+  // { role: 'appMenu' }
+  ...(isMac
+    ? [{
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' }
+        ]
+      }]
+    : []),
+  // { role: 'fileMenu' }
+  {
+    label: 'File',
+    submenu: [
+      isMac ? { role: 'close' } : { role: 'quit' }
+    ]
+  },
+  // { role: 'editMenu' }
+  {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      ...(isMac
+        ? [
+            { role: 'pasteAndMatchStyle' },
+            { role: 'delete' },
+            { role: 'selectAll' },
+            { type: 'separator' },
+            {
+              label: 'Speech',
+              submenu: [
+                { role: 'startSpeaking' },
+                { role: 'stopSpeaking' }
+              ]
+            }
+          ]
+        : [
+            { role: 'delete' },
+            { type: 'separator' },
+            { role: 'selectAll' }
+          ])
+    ]
+  },
+  // { role: 'viewMenu' }
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forceReload' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      { role: 'resetZoom' },
+      { role: 'zoomIn' },
+      { role: 'zoomOut' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' }
+    ]
+  },
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      ...(isMac
+        ? [
+            { type: 'separator' },
+            { role: 'front' },
+            { type: 'separator' },
+            { role: 'window' }
+          ]
+        : [
+            { role: 'close' }
+          ])
+    ]
+  },
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://electronjs.org')
+        }
+      }
+    ]
+  }
+]
+
+const menu = Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu)
+```
+
+
+
+### 上下文菜单
+
+
+
+[官方文档]: https://www.electronjs.org/zh/docs/latest/api/menu#%E6%B8%B2%E6%9F%93%E8%BF%9B%E7%A8%8B
+
+
+要创建由渲染器启动的菜单，请通过 IPC 发送所需的信息到主过程，并让主过程代替渲染器显示菜单
+
+```javascript
+*// renderer*
+window.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+  ipcRenderer.send('show-context-menu')
+})
+
+ipcRenderer.on('context-menu-command', (e, command) => {
+  console.log(e, command)
+})
+
+*// main*
+ipcMain.on('show-context-menu', (event) => {
+  const template = [
+    {
+      label: 'Menu Item 1',
+      click: () => { event.sender.send('context-menu-command', 'menu-item-1') }
+    },
+    { type: 'separator' },
+    { label: 'Menu Item 2', type: 'checkbox', checked: true }
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  menu.popup({ window: BrowserWindow.fromWebContents(event.sender) })
+})
+```
+
+
+
+
+
+### 托盘
+
+
+
+[官方文档]: https://www.electronjs.org/zh/docs/latest/tutorial/tray
+
+```javascript
+import { Tray, Menu, BrowserWindow } from 'electron'
+import favicon from '../../resources/favicon.ico?asset'
+
+export default function createTray(win: BrowserWindow) {
+  const tray = new Tray(favicon)
+
+  const isMac = process.platform === 'darwin'
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'electron', enabled: false },
+    { label: '退出', role: isMac ? 'close' : 'quit' }
+  ])
+  // 工具提示和标题
+  tray.setToolTip('This is my application.')
+  tray.setContextMenu(contextMenu)
+
+  tray.on('double-click', () => {
+    win.show()
+  })
+}
+```
+
+
+
+
+
 ## 无边框窗口
+
+[官方文档]: https://www.electronjs.org/zh/docs/latest/tutorial/window-customization#%E5%88%9B%E5%BB%BA%E6%97%A0%E8%BE%B9%E6%A1%86%E7%AA%97%E5%8F%A3
+
+要创建无边框窗口，需在 `BrowserWindow` 的构造中将 `frame` 参数设置为 `false`：
+
+```js
+// main
+const { BrowserWindow } = require('electron')
+const win = new BrowserWindow({ frame: false })
+```
+
+
+
+### 应用自定义标题栏样式
 
 ```js
 const { BrowserWindow } = require('electron')
@@ -106,6 +312,8 @@ const win = new BrowserWindow({
 })
 win.show()
 ```
+
+**无边框窗口仅能实现通用的样式，而且样式也比较奇怪：控制区域图标大小、间距无法修改，也没法内置其他的操作图标进去**
 
 默认情况下, 无边框窗口是不可拖拽的。 应用程序需要在 CSS 中指定 `-webkit-app-region: drag` 来告诉 Electron 哪些区域是可拖拽的（如操作系统的标准标题栏），在可拖拽区域内部使用 `-webkit-app-region: no-drag` 则可以将其中部分区域排除。 请注意, 当前只支持矩形形状。
 
@@ -126,3 +334,60 @@ button {
 ```
 
 如果只将自定义标题栏设置为可拖拽，还需要使标题栏中的所有按钮都不可拖拽。
+
+### 自定义窗口标题栏
+
+```js
+// main
+    new BrowserWindow({
+      autoHideMenuBar: true,
+      frame: true, // 无边框窗口
+      titleBarStyle: 'hidden',// 无标题
+      show: false,
+    });
+
+  ipcMain.on('detach:service', async (_event, { type }) => {
+    const operation = {
+      minimize: () => {
+        mainWindow.focus()
+        mainWindow.minimize()
+      },
+      maximize: () => {
+        mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize()
+      },
+      close: () => {
+        mainWindow.close()
+      }
+    }
+    operation[type]()
+  })
+```
+
+```html
+// renderer
+<a-layout-header class="layout-header">
+  <div class="dragarea"></div>
+  <div class="action_button" @click="action('minimize')"><icon-minus /></div>
+  <div class="action_button" @click="action('maximize')"><icon-expand /></div>
+  <div class="action_button action_button_close" @click="action('close')">
+    <icon-close />
+  </div>
+</a-layout-header>
+
+// js
+const action = (type) => ipcRenderer.send('detach:service', ...args)
+```
+
+​	
+
+### 提示：禁用文本选择
+
+创建可拖拽区域时，拖拽行为可能与文本选择相冲突。 例如，当您拖动标题栏时，您可能不小心选中其中的文本。 为了避免这种情况，您需要在可拖拽区域中禁用文本选择，像这样：
+
+```css
+.titlebar {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+```
+
