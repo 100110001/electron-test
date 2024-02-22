@@ -49,4 +49,5 @@ export async function handleFileOpen() {
   if (!canceled) {
     return filePaths
   }
+  return
 }

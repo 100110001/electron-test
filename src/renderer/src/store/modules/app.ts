@@ -1,13 +1,17 @@
 import { defineStore } from 'pinia'
 import { store } from '@renderer/store'
 
+interface AppState {
+  configuration: object
+}
+
 export const useAppStore = defineStore({
   id: 'app',
-  state: () => ({
+  state: (): AppState => ({
     configuration: {}
   }),
   getters: {
-    getConfiguration() {
+    getConfiguration(): object {
       return this.configuration
     }
   },

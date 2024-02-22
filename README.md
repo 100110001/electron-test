@@ -450,3 +450,122 @@ port.on('message', (files) => {
 
 ```
 
+
+
+
+
+# electron-vite 配置
+
+## 热重载
+
+[什么是热重载]: https://cn.electron-vite.org/guide/hot-reloading
+
+热重载是指在主进程或预加载脚本模块发生变化时快速重新构建并重启 Electron 程序。事实上，并不是真正的热重载，而是类似的。它为开发者带来了很好的开发体验。
+
+electron-vite 是怎么做到的：
+
+- 启用 rollup 监视器, 观察主进程或预加载脚本的模块变化。
+- 当主进程的模块变化时，重新构建并重启 Electron 程序。
+- 当预加载脚本的模块变化时，重新构建并触发渲染进程重载。
+
+
+
+```js
+"dev": "chcp 65001 && electron-vite dev --watch",
+```
+
+
+
+## 源代码保护
+
+[bytecodePlugin]: https://cn.electron-vite.org/guide/source-code-protection#%E5%BC%80%E5%90%AF%E5%AD%97%E8%8A%82%E7%A0%81%E6%8F%92%E4%BB%B6%E4%BF%9D%E6%8A%A4%E6%BA%90%E4%BB%A3%E7%A0%81
+
+开启字节码插件保护源代码，启用 `bytecodePlugin` 插件：
+
+```js
+import { defineConfig, bytecodePlugin } from 'electron-vite'
+
+export default defineConfig({
+  main: {
+    plugins: [bytecodePlugin()]
+  },
+  preload: {
+    plugins: [bytecodePlugin()]
+  },
+  renderer: {
+    // ...
+  }
+})
+```
+
+`bytecodePlugin` 仅适用于生产阶段构建并且只支持主进程和预加载脚本。
+
+需要注意的是，预加载脚本需要禁用 `sandbox` 才能支持字节码，因为字节码是基于 Node 的 `vm` 模块实现。从 Electron 20 开始，渲染器默认会被沙箱化，所以如果你想使用字节码来保护预加载脚本，你需要设置 `sandbox: false`。
+
+
+
+## 压缩资源
+
+[vite-plugin-compression]: https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md
+
+`vite-plugin-compression` 使用 `gzip` 或者 `brotli` 来压缩资源.
+
+
+
+## 按需加载
+
+[arco 文档]: https://arco.design/vue/docs/start
+
+与组件库主题（Arco 插件）
+
+```js
+import { vitePluginForArco } from '@arco-plugins/vite-vue'
+export default defineConfig({
+  plugins: [
+    vue(),
+    vitePluginForArco({
+      style: 'css'
+    })
+  ]
+})
+```
+
+
+
+## 代码分割
+
+[产物分块策略]: https://cn.vitejs.dev/guide/build#chunking-strategy
+[分块策略]: https://cn.electron-vite.org/guide/build#%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5
+
+```js
+// vite.config.js
+import { splitVendorChunkPlugin } from 'vite'
+export default defineConfig({
+  plugins: [splitVendorChunkPlugin()],
+})
+```
+
+
+
+## 模块分析
+
+可视化并分析您的 Rollup 包，看看哪些模块占用了空间。
+
+[rollup-plugin-visualizer]: https://www.npmjs.com/package/rollup-plugin-visualizer
+
+```js
+import { visualizer } from "rollup-plugin-visualizer";
+
+export default defineConfig({
+  plugins: [visualizer() as PluginOption],
+})
+```
+
+
+
+
+
+## 外部依赖
+
+[外部依赖]: https://cn.electron-vite.org/guide/build#%E5%88%86%E5%9D%97%E7%AD%96%E7%95%A5
+

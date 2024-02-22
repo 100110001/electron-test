@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, shell, BrowserWindow, ipcMain, nativeTheme, Menu } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
@@ -122,9 +123,9 @@ function createWindow() {
       },
       { type: 'separator' },
       { label: 'Menu Item 2', type: 'checkbox', checked: true }
-    ]
+    ] as any
     const menu = Menu.buildFromTemplate(template)
-    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) })
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) as BrowserWindow | undefined })
   })
 }
 
