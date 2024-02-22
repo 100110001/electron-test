@@ -446,7 +446,7 @@ button {
 const action = (type) => ipcRenderer.send('detach:service', ...args)
 ```
 
-​	
+​
 
 ### 提示：禁用文本选择
 
@@ -533,7 +533,33 @@ port.on('message', (files) => {
 
 
 
-# electron-vite 
+
+
+# Electron-builder打包和自动更新
+
+原文：https://www.cnblogs.com/konghuanxi/p/17629100.html
+
+electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
+
+只需要修改 electron-builder.yml 即可，我常用的配置如下：
+
+```yaml
+nsis:
+  oneClick: false # 创建一键安装程序还是辅助安装程序（默认是一键安装）
+  allowElevation: true # 是否允许请求提升，如果为false，则用户必须使用提升的权限重新启动安装程序 （仅作用于辅助安装程序）
+  allowToChangeInstallationDirectory: true # 是否允许修改安装目录 （仅作用于辅助安装程序）
+  createStartMenuShortcut: true # 是否创建开始菜单快捷方式
+  artifactName: ${productName}-${version}-${platform}-${arch}.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+```
+
+详见：[NsisOptions](https://www.electron.build/configuration/nsis)
+
+
+
+# electron-vite
 
 ## nodeIntegration
 
@@ -542,6 +568,38 @@ port.on('message', (files) => {
 目前，electron-vite 不支持 `nodeIntegration`。其中一个重要的原因是 Vite 的 HMR 是基于原生 ESM 实现的。但是还有一种支持方式就是使用 `require` 导入 node 模块，不太优雅。或者你可以使用插件 [vite-plugin-commonjs-externals](https://github.com/xiaoxiangmoe/vite-plugin-commonjs-externals) 来处理。
 
 也许将来会有更好的方法来支持。但需要注意的是，使用预加载脚本是一个更好、更安全的选择。
+
+
+
+
+
+## NSIS安装引导
+
+electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
+
+只需要修改 electron-builder.yml 即可，我常用的配置如下：
+
+```yaml
+nsis:
+  oneClick: false # 创建一键安装程序还是辅助安装程序（默认是一键安装）
+  allowElevation: true # 是否允许请求提升，如果为false，则用户必须使用提升的权限重新启动安装程序 （仅作用于辅助安装程序）
+  allowToChangeInstallationDirectory: true # 是否允许修改安装目录 （仅作用于辅助安装程序）
+  createStartMenuShortcut: true # 是否创建开始菜单快捷方式
+  artifactName: ${productName}-${version}-${platform}-${arch}.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+```
+
+详见：[NsisOptions](https://www.electron.build/configuration/nsis)
+
+
+
+## NSIS安装引导
+
+electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
+
+只需要修改 electron-builder.yml 即可，我常用的配置如下：
 
 
 
@@ -600,6 +658,8 @@ export default defineConfig({
 [vite-plugin-compression]: https://github.com/vbenjs/vite-plugin-compression/blob/main/README.zh_CN.md
 
 `vite-plugin-compression` 使用 `gzip` 或者 `brotli` 来压缩资源.
+
+https://www.npmjs.com/package/unplugin-vue-components
 
 
 
