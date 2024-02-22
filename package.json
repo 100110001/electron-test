@@ -25,16 +25,16 @@
     "@arco-plugins/vite-vue": "^1.4.5",
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
-    "electron-updater": "^6.1.7",
     "animate.css": "^4.1.1",
+    "electron-updater": "^6.1.7",
     "pinia": "^2.1.7",
     "pinyin-pro": "^3.19.4",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.54.3",
-    "@electron-toolkit/eslint-config-ts": "^1.0.1",
     "@electron-toolkit/eslint-config": "^1.0.2",
+    "@electron-toolkit/eslint-config-ts": "^1.0.1",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@rushstack/eslint-patch": "^1.7.1",
     "@types/node": "^18.19.9",
@@ -43,12 +43,12 @@
     "@vue/eslint-config-typescript": "^12.0.0",
     "ant-design-vue": "^4.1.1",
     "axios": "^1.6.5",
+    "electron": "^28.2.0",
     "electron-builder": "^24.9.1",
     "electron-devtools-installer": "^3.2.0",
     "electron-vite": "^2.0.0",
-    "electron": "^28.2.0",
-    "eslint-plugin-vue": "^9.20.1",
     "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^9.20.1",
     "highlight.js": "^11.9.0",
     "less": "^4.2.0",
     "lodash": "^4.17.21",
@@ -56,11 +56,9 @@
     "rollup-plugin-visualizer": "^5.12.0",
     "sass": "^1.71.0",
     "typescript": "^5.3.3",
-    "vite-plugin-components": "^0.13.3",
-    "vite-plugin-compression": "^0.5.1",
     "vite": "^5.0.12",
+    "vue": "^3.4.15",
     "vue-router": "^4.2.5",
-    "vue-tsc": "^1.8.27",
-    "vue": "^3.4.15"
+    "vue-tsc": "^1.8.27"
   }
 }

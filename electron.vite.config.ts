@@ -9,7 +9,6 @@ import { type PluginOption } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { vitePluginForArco } from '@arco-plugins/vite-vue'
-// import viteCompression from 'vite-plugin-compression'
 
 export default defineConfig({
   main: {
@@ -26,7 +25,6 @@ export default defineConfig({
     },
     plugins: [
       vue(),
-      // viteCompression(),
       vitePluginForArco({ style: 'css' }),
       splitVendorChunkPlugin(),
       visualizer({
