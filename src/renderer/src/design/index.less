@@ -1,0 +1,71 @@
+input:-webkit-autofill {
+  box-shadow: 0 0 0 1000px white inset !important;
+}
+
+:-webkit-autofill {
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+html {
+  overflow: hidden;
+  text-size-adjust: 100%;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  overflow-x: hidden;
+
+  padding: 0;
+  margin: 0;
+  &.color-weak {
+    filter: invert(80%);
+  }
+
+  &.gray-mode {
+    filter: grayscale(100%);
+    filter: progid:dximagetransform.microsoft.basicimage(grayscale=1);
+  }
+}
+
+a:focus,
+a:active,
+button,
+div,
+svg,
+span {
+  outline: none;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+/* 定义滚动条的样式 */
+::-webkit-scrollbar {
+  width: 6px; /* 滚动条宽度 */
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+  background: #ffffff00;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  background: #86909c;
+  border-radius: 6px;
+  width: 4px;
+  margin: 0 2px;
+}
+
+/* 当鼠标悬停在滚动条上时的滑块样式 */
+::-webkit-scrollbar-thumb:hover {
+  background: #86909c;
+  border-radius: 6px;
+  width: 4px;
+  margin: 0 2px;
+}

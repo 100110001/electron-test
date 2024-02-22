@@ -1,13 +1,21 @@
 import { resolve } from 'path'
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import {
+  defineConfig,
+  externalizeDepsPlugin,
+  splitVendorChunkPlugin,
+  bytecodePlugin
+} from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
+import { visualizer } from 'rollup-plugin-visualizer'
+import { vitePluginForArco } from '@arco-plugins/vite-vue'
+import viteCompression from 'vite-plugin-compression'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(), bytecodePlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(), bytecodePlugin()]
   },
   renderer: {
     resolve: {
@@ -15,6 +23,12 @@ export default defineConfig({
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [vue()]
+    plugins: [
+      vue(),
+      viteCompression(),
+      vitePluginForArco({ style: 'css' }),
+      splitVendorChunkPlugin(),
+      visualizer({ open: true, gzipSize: true, brotliSize: true, filename: 'visualizer.html' })
+    ]
   }
 })
