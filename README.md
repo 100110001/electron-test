@@ -446,7 +446,7 @@ button {
 const action = (type) => ipcRenderer.send('detach:service', ...args)
 ```
 
-​
+
 
 ### 提示：禁用文本选择
 
@@ -556,6 +556,14 @@ nsis:
 ```
 
 详见：[NsisOptions](https://www.electron.build/configuration/nsis)
+
+
+
+
+
+## Github与Gitee同步
+
+https://help.gitee.com/repository/settings/sync-between-gitee-github#%E5%A6%82%E4%BD%95%E7%94%B3%E8%AF%B7-github-%E7%A7%81%E4%BA%BA%E4%BB%A4%E7%89%8C
 
 
 
