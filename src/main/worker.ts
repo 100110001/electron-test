@@ -10,7 +10,7 @@ if (!port) throw new Error('IllegalState')
  * @param {Array} files 图片路径
  */
 port.on('message', (files) => {
-  const result = [] as any[]
+  const result = [] as unknown[]
   files.forEach(function (file) {
     const data = fs.readFileSync(file)
     result.push('data:image/png;base64,' + data.toString('base64'))

@@ -1,12 +1,12 @@
 # electron-app
 
-An Electron application with Vue and TypeScript
+使用 Vue 和 TypeScript 的 Electron 应用程序
 
-## Recommended IDE Setup
+## 推荐的 IDE 设置
 
 - [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
 
-## Project Setup
+## 项目设置
 
 ### Install
 
@@ -389,5 +389,64 @@ const action = (type) => ipcRenderer.send('detach:service', ...args)
   -webkit-user-select: none;
   -webkit-app-region: drag;
 }
+```
+
+
+
+
+
+## 多线程
+
+[官方文档]: https://www.electronjs.org/zh/docs/latest/tutorial/multithreading
+[Electron-vite 导入 Worker Threads]: https://cn.electron-vite.org/guide/assets#%E5%AF%BC%E5%85%A5-worker-threads
+
+
+
+需把`webPreferences`中的`nodeIntegrationInWorker`选项设置为`true`
+
+```js
+win = new BrowserWindow({
+  webPreferences: {
+    nodeIntegrationInWorker: true
+  }
+})
+```
+
+`nodeIntegrationInWorker` 可以独立于`nodeIntegration`使用，但`sandbox`必须不能设置为`true`
+
+```js
+// main
+import createWorker from './worker?nodeWorker'
+const myWorker = createWorker({ workerData: 'worker' })
+
+myWorker.postMessage(data)
+myWorker.on('message', (message) => {
+  port.postMessage(message)
+  port.close()
+})
+```
+
+```js
+// worker.js
+import { parentPort } from 'worker_threads'
+import fs from 'fs'
+
+const port = parentPort
+if (!port) throw new Error('IllegalState')
+
+/**
+ * readAndConvertImageToBase64
+ * 读取图片将其转化为base64
+ * @param {Array} files 图片路径
+ */
+port.on('message', (files) => {
+  const result = [] as unknown[]
+  files.forEach(function (file) {
+    const data = fs.readFileSync(file)
+    result.push('data:image/png;base64,' + data.toString('base64'))
+  })
+  port.postMessage(result)
+})
+
 ```
 

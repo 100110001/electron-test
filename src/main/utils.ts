@@ -1,7 +1,7 @@
 import { dialog } from 'electron'
 import XLSX from 'xlsx'
 
-export async function handleFileSave(event, header, body) {
+export async function handleFileSave(_event, header, body) {
   // console.log('handleFileSave', event, header, body)
   // https://juejin.cn/post/7065126114238136356#heading-7
   const format = 'xlsx'
