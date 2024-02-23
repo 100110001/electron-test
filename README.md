@@ -522,26 +522,19 @@ port.on('message', (files) => {
 
 
 
-
-
-# 关于分发
-
-## 打包
+# 关于构建
 
 [分发]: https://cn.electron-vite.org/guide/distribution
 [打包您的应用程序]: https://www.electronjs.org/zh/docs/latest/tutorial/%E6%89%93%E5%8C%85%E6%95%99%E7%A8%8B
+[Electron-builder打包和自动更新]: https://www.cnblogs.com/konghuanxi/p/17629100.html
 
 
 
-
-
-# Electron-builder打包和自动更新
-
-原文：https://www.cnblogs.com/konghuanxi/p/17629100.html
+## NSIS安装引导
 
 electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
 
-只需要修改 electron-builder.yml 即可，我常用的配置如下：
+只需要修改 electron-builder.yml 即可
 
 ```yaml
 nsis:
@@ -559,11 +552,110 @@ nsis:
 
 
 
+##  Github Action
+
+1. Settings → Developer Settings  → Peronall access tokens → Tokens → Generate new token → Generate new token (classic) 
+
+   ![1708700959632.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/652440a2be864e7db2b3b161ece7dd0f~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1202&h=344&s=49708&e=png&b=ffffff)
 
 
-## Github与Gitee同步
+2. 配置选择如下
 
-https://help.gitee.com/repository/settings/sync-between-gitee-github#%E5%A6%82%E4%BD%95%E7%94%B3%E8%AF%B7-github-%E7%A7%81%E4%BA%BA%E4%BB%A4%E7%89%8C
+      ![1708701107325.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/142a31044446454da0deea66d0e2b907~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=729&h=441&s=32882&e=png&b=ffffff)
+
+
+3. 仓库设置 token，项目 → Settings → Secrets and variables → Actions
+![1708701243484.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2951eda34a044f4abf46570b49524cad~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1208&h=709&s=51516&e=png&b=ffffff)
+
+
+
+4. 添加 Github Action 文件，在`.github/workflows` 下创建 `build.yml`文件
+
+[参考 electron-vite Github Action CI/CD]: https://cn.electron-vite.org/guide/distribution#github-action-ci-cd
+
+```yml
+name: Build/release Electron app
+
+# on: workflow_dispatch 手动触发工作流程
+# 当Tag提交时自动触发
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: npm install
+
+      # - name: build-linux
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: npm run build:linux
+
+      # - name: build-mac
+      #   if: matrix.os == 'macos-latest'
+      #   run: npm run build:mac
+
+      - name: build-win
+        if: matrix.os == 'windows-latest'
+        run: npm run build:win
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+              dist/*.exe
+         	  dist/*.exe.blockmap
+         	  dist/latest.yml
+            # dist/*.exe
+            # dist/*.zip
+            # dist/*.dmg
+            # dist/*.AppImage
+            # dist/*.snap
+            # dist/*.deb
+            # dist/*.rpm
+            # dist/*.tar.gz
+            # dist/*.yml
+            # dist/*.blockmap
+        env:
+        
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+```
+
+
+
+
+
+
+
+
+# Github与Gitee同步
+
+[仓库镜像管理]: https://help.gitee.com/repository/settings/sync-between-gitee-github
+
+如何进行Github与Gitee的同步，Gitee中有完整示例教程，但是有以下注意的点
+
+- 仓库在进行同步的操作时，如果两三分钟没有同步完成，那基本就可以重新开始了
+- 如果提交的代码中包 `.github/workflows`的文件，也就是想要使用`Github Action`时，在申请`Tokens`的时候 要把以下这些全部勾选 `repo`、`workflow`、`write:packages`、`admin:org`、`admin:repo_hook`。也就是你要同时把Github Action 的权限和 Gitee与Github 同步的权限都要勾选上
+
+
 
 
 
@@ -576,40 +668,6 @@ https://help.gitee.com/repository/settings/sync-between-gitee-github#%E5%A6%82%E
 目前，electron-vite 不支持 `nodeIntegration`。其中一个重要的原因是 Vite 的 HMR 是基于原生 ESM 实现的。但是还有一种支持方式就是使用 `require` 导入 node 模块，不太优雅。或者你可以使用插件 [vite-plugin-commonjs-externals](https://github.com/xiaoxiangmoe/vite-plugin-commonjs-externals) 来处理。
 
 也许将来会有更好的方法来支持。但需要注意的是，使用预加载脚本是一个更好、更安全的选择。
-
-
-
-
-
-## NSIS安装引导
-
-electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
-
-只需要修改 electron-builder.yml 即可，我常用的配置如下：
-
-```yaml
-nsis:
-  oneClick: false # 创建一键安装程序还是辅助安装程序（默认是一键安装）
-  allowElevation: true # 是否允许请求提升，如果为false，则用户必须使用提升的权限重新启动安装程序 （仅作用于辅助安装程序）
-  allowToChangeInstallationDirectory: true # 是否允许修改安装目录 （仅作用于辅助安装程序）
-  createStartMenuShortcut: true # 是否创建开始菜单快捷方式
-  artifactName: ${productName}-${version}-${platform}-${arch}.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-```
-
-详见：[NsisOptions](https://www.electron.build/configuration/nsis)
-
-
-
-## NSIS安装引导
-
-electron-builder 生成的安装包默认是一键安装，也就是无法选择安装路径等。这时候就需要用到 NSIS 了（注意：NSIS 只适用于 Window 平台）
-
-只需要修改 electron-builder.yml 即可，我常用的配置如下：
-
-
 
 
 

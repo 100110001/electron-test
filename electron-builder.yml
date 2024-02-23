@@ -43,7 +43,14 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  # provider: generic
+  # url: https://example.com/auto-updates
+  provider: github
+  owner: 100110001
+  repo: electron
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
+releaseInfo:
+  # normal 弹窗 / major 强制更新
+  releaseName: 'normal'
+

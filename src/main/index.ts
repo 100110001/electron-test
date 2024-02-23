@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { app, shell, BrowserWindow, ipcMain, nativeTheme, Menu } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeTheme, Menu, dialog } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
 import path from 'path'
 import lodash from 'lodash'
+import { autoUpdater } from 'electron-updater'
 
 import createTray from './tray'
 
@@ -119,6 +120,48 @@ function createWindow() {
         label: 'Menu Item 1',
         click: () => {
           event.sender.send('context-menu-command', 'menu-item-1')
+        }
+      },
+      {
+        label: 'Menu',
+        click: () => {
+          // 默认会自动下载新版本
+          // 如果不想自动下载，设置 autoUpdater.autoDownload = false
+          let version, releaseNotes
+
+          autoUpdater.checkForUpdates()
+
+          autoUpdater.on('update-available', (info) => {
+            // 获取 版本号、发布日志
+            version = info.version
+            releaseNotes = info.releaseNotes
+            console.log('有新版本', version, releaseNotes)
+
+            mainWindow.webContents.send('update-counter', info)
+          })
+
+          // 监听下载进度
+          autoUpdater.on('download-progress', ({ percent }) => {
+            console.log('下载进度', percent)
+          })
+
+          // 下载完成
+          autoUpdater.on('update-downloaded', () => {
+            console.log('下载完成')
+            dialog
+              .showMessageBox(mainWindow, {
+                title: '版本更新',
+                message: `发现新版本${version}，是否更新\n\n${releaseNotes}`,
+                type: 'info',
+                buttons: ['稍后提示', '立即更新']
+              })
+              .then(({ response }) => {
+                console.log(response)
+                if (response === 1) {
+                  autoUpdater.quitAndInstall()
+                }
+              })
+          })
         }
       },
       { type: 'separator' },

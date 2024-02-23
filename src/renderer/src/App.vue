@@ -17,6 +17,8 @@ onMounted(() => {
       document.body.removeAttribute('arco-theme')
     }
   })
+
+  window.electron.ipcRenderer.on('update-counter', (_event, value) => console.log('App', value))
 })
 </script>
 
