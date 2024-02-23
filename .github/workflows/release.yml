@@ -51,10 +51,9 @@ jobs:
         with:
           draft: true
           files: |
-            dist/**
-            # dist/*.exe
-         	  # dist/*.exe.blockmap
-         	  # dist/latest.yml
+            dist/*.exe
+         	  dist/*.exe.blockmap
+         	  dist/latest.yml
             # dist/*.exe
             # dist/*.zip
             # dist/*.dmg
