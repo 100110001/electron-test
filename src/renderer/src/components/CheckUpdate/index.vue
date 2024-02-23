@@ -8,7 +8,7 @@ import { Notification } from '@arco-design/web-vue'
 
 const NotificationConfig = {
   id: 'update',
-  title: '',
+  title: '检查更新',
   content: '',
   position: 'bottomRight'
 }
@@ -31,22 +31,20 @@ onMounted(() => {
     let msg = {}
 
     if (type == 'version') {
-      msg = Object.assign(NotificationConfig, { title: `当前版本信息： ${data}` })
+      msg = Object.assign(NotificationConfig, { content: `当前版本信息: ${data}` })
       window.electronAPI.ipcRender.send('checkForUpdate')
     } else if (type == 'updateDownloadedProgress') {
       const progress = parseInt(data.percent, 10)
       msg = Object.assign(NotificationConfig, {
-        title: message[type],
-        content: `当前进度: ${progress}%`
+        content: `${message[type]}: ${progress}%`
       })
     } else if (type == 'updateAva') {
       msg = Object.assign(NotificationConfig, {
-        title: message[type],
-        content: `当前最新版本为 ${data.version}`
+        content: `${message[type]}: ${data.version}`
       })
     } else {
       msg = Object.assign(NotificationConfig, {
-        title: message[type]
+        content: message[type]
       })
     }
 
