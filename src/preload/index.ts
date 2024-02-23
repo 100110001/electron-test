@@ -3,6 +3,14 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {}
+const ipc = {
+  render: {
+    // 主进程发出的通知
+    send: ['checkForUpdate', 'checkAppVersion'],
+    // 渲染进程发出的通知
+    receive: ['message']
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -35,7 +43,24 @@ if (process.contextIsolated) {
         ipcRenderer.postMessage('give-me-a-stream', null, [port1])
       },
 
-      service: (...args) => ipcRenderer.send('detach:service', ...args)
+      service: (...args) => ipcRenderer.send('detach:service', ...args),
+
+      ipcRender: {
+        // 主进程发送通知给渲染进程
+        send: (channel, data) => {
+          const validChannels = ipc.render.send
+          if (validChannels.includes(channel)) {
+            ipcRenderer.send(channel, data)
+          }
+        },
+        // 渲染进程监听到主进程发来的通知，执行相关的操作
+        receive: (channel, func) => {
+          const validChannels = ipc.render.receive
+          if (validChannels.includes(channel)) {
+            ipcRenderer.on(`${channel}`, (_event, ...args) => func(...args))
+          }
+        }
+      }
     })
   } catch (error) {
     console.error(error)
@@ -45,4 +70,6 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = api
+  // @ts-ignore (define in dts)
+  window.ipc = ipc
 }

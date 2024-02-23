@@ -1,3 +1,7 @@
-provider: generic
-url: https://example.com/auto-updates
-updaterCacheDirName: electron-app-updater
+# provider: generic
+# url: https://example.com/auto-updates
+# updaterCacheDirName: electron-test-updater
+
+provider: github
+owner: 100110001
+repo: electron

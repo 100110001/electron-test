@@ -5,9 +5,9 @@ import {
   splitVendorChunkPlugin,
   bytecodePlugin
 } from 'electron-vite'
-import { type PluginOption } from 'vite'
+// import { type PluginOption } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { visualizer } from 'rollup-plugin-visualizer'
+// import { visualizer } from 'rollup-plugin-visualizer'
 import { vitePluginForArco } from '@arco-plugins/vite-vue'
 
 export default defineConfig({
@@ -27,12 +27,12 @@ export default defineConfig({
       vue(),
       vitePluginForArco({ style: 'css' }),
       splitVendorChunkPlugin(),
-      visualizer({
-        open: true,
-        gzipSize: true,
-        brotliSize: true,
-        filename: 'visualizer.html'
-      }) as PluginOption
+      // visualizer({
+      //   open: true,
+      //   gzipSize: true,
+      //   brotliSize: true,
+      //   filename: 'visualizer.html'
+      // }) as PluginOption
     ]
   }
 })
