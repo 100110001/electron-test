@@ -48,7 +48,7 @@ publish:
   # url: https://example.com/auto-updates
   provider: github
   owner: 100110001
-  repo: electron
+  repo: electron-test
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
 releaseInfo:

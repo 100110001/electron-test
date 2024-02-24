@@ -1,6 +1,6 @@
 {
   "name": "electron-app",
-  "version": "1.0.8",
+  "version": "1.0.0",
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -33,6 +33,7 @@
     "inquirer": "^9.2.15",
     "pinia": "^2.1.7",
     "pinyin-pro": "^3.19.4",
+    "unzipper": "^0.10.14",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

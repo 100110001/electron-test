@@ -5,6 +5,8 @@ import fs from 'fs'
 import path from 'path'
 import lodash from 'lodash'
 import { autoUpdater } from 'electron-updater'
+import { get } from 'node:https'
+import unzipper from 'unzipper'
 
 import createTray from './tray'
 
@@ -202,6 +204,7 @@ autoUpdater.on('download-progress', (progress) =>
 )
 // 检测到可以更新时
 autoUpdater.on('update-available', (info) => {
+  const appPath = app.getAppPath()
   // 获取 版本号、发布日志
   sendUpdateMessage('updateAva', info)
   // 这里我们可以做一个提示，让用户自己选择是否进行更新
@@ -209,13 +212,28 @@ autoUpdater.on('update-available', (info) => {
     .showMessageBox({
       type: 'info',
       title: '应用有新的更新',
-      message: '发现新版本，是否现在更新？',
+      message: `发现新版本${info.version}&& ${appPath}，是否现在更新？`,
       buttons: ['是', '否']
     })
     .then(({ response }) => {
       if (response === 0) {
         // 下载更新
-        autoUpdater.downloadUpdate()
+        // autoUpdater.downloadUpdate()
+        const downloadZipPath = `https://github.com/100110001/electron-test/releases/download/v${info.version}/app-${info.version}.zip`
+
+        const unzipPath = path.join(appPath, 'unzip')
+        get(downloadZipPath, (response) => {
+          sendUpdateMessage(response)
+          response
+            .pipe(unzipper.Extract({ path: unzipPath }))
+            .on('finish', () => {
+              console.log('解压缩完成！')
+              //  todo 通知前端，有新版本
+            })
+            .on('error', (err: any) => {
+              console.error('解压缩过程中出现错误：' + err.toString())
+            })
+        })
         sendUpdateMessage(message.updateAva)
       }
     })
