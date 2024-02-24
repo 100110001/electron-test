@@ -44,6 +44,7 @@ jobs:
         with:
           draft: false
           files: |
+            dist/*.zip
             dist/*.exe
             dist/*.exe.blockmap
             dist/latest.yml
