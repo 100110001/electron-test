@@ -590,7 +590,7 @@ jobs:
     strategy:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ windows-latest]
+        os: [windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -615,11 +615,13 @@ jobs:
       - name: build-win
         if: matrix.os == 'windows-latest'
         run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: release
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
+          draft: false
           files: |
               dist/*.exe
          	  dist/*.exe.blockmap
@@ -663,6 +665,109 @@ jobs:
     ```
 
     
+
+
+
+
+
+
+
+## 自动更新
+
+[Electron-builder打包和自动更新]: https://www.cnblogs.com/konghuanxi/p/17629100.html
+[使用 Electron Builder 分发应用程序]: https://cn.electron-vite.org/guide/distribution#%E4%BD%BF%E7%94%A8-electron-builder-%E5%88%86%E5%8F%91%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F
+[简单且详细地实现 Electron 自动更新（Auto Update）]: https://juejin.cn/post/7320152980211499060
+[基于Github Actions完成Electron自动打包、发布及更新]: https://juejin.cn/post/7094865414353584164#heading-1
+
+
+
+以下内容基于 `electron-vite` 开发进行的配置
+
+
+
+
+
+### .github\workflows\release.yml
+
+Github Action 配置文件，需要注意的是，在打包的时候需要添加 `env:GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}`
+
+```YML
+name: Build/release Electron app
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: npm install
+
+      # - name: build-linux
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: npm run build:linux
+
+      # - name: build-mac
+      #   if: matrix.os == 'macos-latest'
+      #   run: npm run build:mac
+
+      - name: build-win
+        if: matrix.os == 'windows-latest'
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          files: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+```
+
+
+
+### dev-app-update.yml
+
+```yml
+provider: github
+owner: 100110001
+repo: electron
+```
+
+
+
+### electron-builder.yml
+
+需要在文件中添加以下内容
+
+```
+publish:
+  provider: github
+  owner: 100110001
+  repo: electron
+```
 
 
 
