@@ -15,7 +15,7 @@
             </a-radio-group>
           </a-descriptions-item>
 
-          <a-descriptions-item label="更新"> <CheckUpdate />1.0.0 </a-descriptions-item>
+          <a-descriptions-item label="更新"> <CheckUpdate /> </a-descriptions-item>
         </a-descriptions>
       </a-tab-pane>
       <a-tab-pane key="2" title="Tab 2">

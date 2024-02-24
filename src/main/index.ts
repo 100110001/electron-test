@@ -4,9 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
 import path from 'path'
 import lodash from 'lodash'
-import { autoUpdater } from 'electron-updater'
-import { get } from 'node:https'
+import axios from 'axios'
 import unzipper from 'unzipper'
+import { autoUpdater } from 'electron-updater'
 
 import createTray from './tray'
 
@@ -195,7 +195,9 @@ autoUpdater.autoDownload = false
 // 检测下载错误
 autoUpdater.on('error', (error) => sendUpdateMessage('error', `${message.error}:${error}`))
 // 检测是否需要更新
-autoUpdater.on('checking-for-update', () => sendUpdateMessage('checking'))
+autoUpdater.on('checking-for-update', () => {
+  sendUpdateMessage('checking')
+})
 // 检测到不需要更新时,这里可以做静默处理，不给渲染进程发通知，或者通知渲染进程当前已是最新版本，不需要更新
 autoUpdater.on('update-not-available', () => sendUpdateMessage('updateNotAva'))
 // 更新下载进度,直接把当前的下载进度发送给渲染进程即可，有渲染层自己选择如何做展示
@@ -219,22 +221,8 @@ autoUpdater.on('update-available', (info) => {
       if (response === 0) {
         // 下载更新
         // autoUpdater.downloadUpdate()
-        const downloadZipPath = `https://github.com/100110001/electron-test/releases/download/v${info.version}/app-${info.version}.zip`
-
-        const unzipPath = path.join(appPath, 'unzip')
-        get(downloadZipPath, (response) => {
-          sendUpdateMessage(response)
-          response
-            .pipe(unzipper.Extract({ path: unzipPath }))
-            .on('finish', () => {
-              console.log('解压缩完成！')
-              //  todo 通知前端，有新版本
-            })
-            .on('error', (err: any) => {
-              console.error('解压缩过程中出现错误：' + err.toString())
-            })
-        })
-        sendUpdateMessage(message.updateAva)
+        downloadAndUnzip()
+        // sendUpdateMessage(message.updateAva)
       }
     })
 
@@ -268,6 +256,86 @@ ipcMain.on('checkForUpdate', () => {
 })
 
 // 当前引用的版本告知给渲染层
-ipcMain.on('checkAppVersion', () => {
+ipcMain.on('checkAppVersion', async () => {
   sendUpdateMessage('version', app.getVersion())
 })
+
+// function drawProgressBar(progress) {
+//   const progressBarLength = 20
+//   const progressChars = Math.round(progress * progressBarLength)
+//   const progressBar = '█'.repeat(progressChars) + '-'.repeat(progressBarLength - progressChars)
+//   process.stdout.clearLine(0)
+//   process.stdout.cursorTo(0)
+//   process.stdout.write(`[${progressBar}] ${Math.round(progress * 100)}%`)
+// }
+
+// 复制文件夹及其内容的函数
+function copyFolderRecursiveSync(source, target) {
+  const files = fs.readdirSync(source)
+  files.forEach(function (file) {
+    const curSource = path.join(source, file)
+    const curDest = path.join(target, file)
+    if (fs.lstatSync(curSource).isDirectory()) {
+      if (!fs.existsSync(curDest)) {
+        fs.mkdirSync(curDest)
+      }
+      copyFolderRecursiveSync(curSource, curDest)
+    } else {
+      fs.copyFileSync(curSource, curDest)
+    }
+  })
+}
+
+async function downloadAndUnzip() {
+  const info = { version: '1.0.9' }
+  // const appPath = 'C:\\Users\\Administrator\\AppData\\Local\\Programs\\electron-app'
+  const appPath = app.getAppPath()
+  const downloadZipPath = `https://github.com/100110001/electron-test/releases/download/v${info.version}/app-${info.version}.zip`
+  const downloadPath = path.join(appPath, `..\\..\\resources\\app-${info.version}.zip`)
+  const unzipPath = path.join(appPath, `..\\..\\resources\\app-${info.version}`)
+
+  try {
+    axios({
+      url: downloadZipPath,
+      method: 'GET',
+      responseType: 'stream',
+      timeout: 100000,
+      onDownloadProgress: (progressEvent) => {
+        // console.log('下载进度：', Math.round(progressEvent.progress * 100) + '%')
+        sendUpdateMessage('updateDownloadedProgress', {
+          ...progressEvent,
+          percent: (progressEvent.progress as number) * 100
+        })
+      }
+    })
+      .then((response) => {
+        const file = fs.createWriteStream(downloadPath)
+        response.data.pipe(file)
+        file.on('finish', () => {
+          console.log('文件下载完成')
+          sendUpdateMessage('updateDownloadedSuccess')
+          file.close(() => {
+            fs.createReadStream(downloadPath)
+              .pipe(unzipper.Extract({ path: unzipPath }))
+              .on('finish', function () {
+                console.log('文件解压完成')
+                try {
+                  const unzipFolder = path.join(appPath, '..\\..\\resources', `app-${info.version}`)
+                  const targetFolder = path.join(appPath, '..\\..\\resources', 'app')
+                  copyFolderRecursiveSync(unzipFolder, targetFolder)
+                } catch (e) {
+                  sendUpdateMessage('error', e)
+                  console.log(e)
+                }
+              })
+          })
+        })
+      })
+      .catch((error) => {
+        console.error('下载过程中出现错误：', error)
+        sendUpdateMessage('error', error)
+      })
+  } catch (error) {
+    console.error('下载过程中出现错误：', error)
+  }
+}
